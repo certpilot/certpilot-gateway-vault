@@ -61,6 +61,20 @@ type roleData struct {
 	// from such a role cannot be revoked by serial and cannot be looked up,
 	// and the only moment anyone finds out is the moment they need to.
 	NoStore bool `json:"no_store"`
+
+	// KeyUsage and the four flags below decide a certificate's key usage and
+	// extended key usage entirely — Vault does not read these from the issue
+	// or sign request body at all; a value sent there is accepted and
+	// ignored. Confirmed against a running Vault 2.0.3: a role with
+	// client_flag=false handed a request asking for ext_key_usage=[ClientAuth]
+	// issues a certificate with only the role's serverAuth, silently.
+	// Reading the role rather than sending a request and hoping is not a
+	// style preference; it is the only way this can be correct at all.
+	KeyUsage            []string `json:"key_usage"`
+	ServerFlag          bool     `json:"server_flag"`
+	ClientFlag          bool     `json:"client_flag"`
+	CodeSigningFlag     bool     `json:"code_signing_flag"`
+	EmailProtectionFlag bool     `json:"email_protection_flag"`
 }
 
 // flexInt reads a number Vault may send as a JSON number or a string.

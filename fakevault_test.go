@@ -114,9 +114,14 @@ type fakeVault struct {
 	server *httptest.Server
 	mount  string
 
-	root      *testCA
-	issuing   *testCA
-	role      map[string]any
+	root    *testCA
+	issuing *testCA
+	role    map[string]any
+	// roles holds every role this fake answers for, keyed by name. "web" is
+	// seeded from `role` above for the tests that predate ca_profile and
+	// address it by the single default; addRole registers more, for tests
+	// that exercise a request naming a different one.
+	roles     map[string]map[string]any
 	tokenTTL  int
 	renewable bool
 
@@ -156,9 +161,19 @@ func newFakeVault(t *testing.T, issuingExpiresIn time.Duration) *fakeVault {
 			"no_store":            false,
 		},
 	}
+	fake.roles = map[string]map[string]any{"web": fake.role}
 	fake.server = httptest.NewServer(http.HandlerFunc(fake.route))
 	t.Cleanup(fake.server.Close)
 	return fake
+}
+
+// addRole registers an additional named role this fake will answer
+// pki/roles/<name> for, distinct from "web" — for a test that issues under a
+// ca_profile naming a different role, or checks key usage against one.
+func (f *fakeVault) addRole(name string, fields map[string]any) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.roles[name] = fields
 }
 
 // config returns a provider configuration pointing at this fake.
@@ -221,10 +236,16 @@ func (f *fakeVault) route(w http.ResponseWriter, r *http.Request) {
 		f.writeRaw(w, map[string]any{"auth": map[string]any{
 			"client_token": token, "lease_duration": f.tokenTTL, "renewable": f.renewable,
 		}})
-	case path == "/v1/"+f.mount+"/roles/web":
-		f.write(w, f.role)
 	case strings.HasPrefix(path, "/v1/"+f.mount+"/roles/"):
-		f.fail(w, http.StatusNotFound, "")
+		name := strings.TrimPrefix(path, "/v1/"+f.mount+"/roles/")
+		f.mu.Lock()
+		fields, ok := f.roles[name]
+		f.mu.Unlock()
+		if !ok {
+			f.fail(w, http.StatusNotFound, "unknown role: "+name)
+			return
+		}
+		f.write(w, fields)
 	case path == "/v1/"+f.mount+"/issuers":
 		if f.noIssuer {
 			f.fail(w, http.StatusForbidden, "permission denied")

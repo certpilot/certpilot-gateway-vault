@@ -109,8 +109,13 @@ func (p *Provider) IssueCertificate(
 	if err != nil {
 		return nil, err
 	}
+	cfg = cfg.WithRole(req.CaProfile)
 	ctx, cancel := deadline(ctx, cfg)
 	defer cancel()
+
+	if err := p.checkKeyUsageAgainstRole(ctx, cfg, req.KeyUsage, req.ExtendedKeyUsage); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
 
 	result, generated, err := p.obtain(ctx, cfg, req.CsrPem, req.Domains, req.ValidityDays)
 	if err != nil {
@@ -145,8 +150,13 @@ func (p *Provider) RenewCertificate(
 	if err != nil {
 		return nil, err
 	}
+	cfg = cfg.WithRole(req.CaProfile)
 	ctx, cancel := deadline(ctx, cfg)
 	defer cancel()
+
+	if err := p.checkKeyUsageAgainstRole(ctx, cfg, req.KeyUsage, req.ExtendedKeyUsage); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
 
 	domains := req.Domains
 	if len(domains) == 0 && len(req.CurrentCertificatePem) > 0 {

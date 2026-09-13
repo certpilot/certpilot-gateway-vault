@@ -264,6 +264,23 @@ func isLoopback(host string) bool {
 	return false
 }
 
+// WithRole returns a copy of this configuration with Role overridden, when
+// override is non-empty — the ca_profile field on a request, which lets one
+// CA account serve several Vault roles instead of one role per account and
+// the credential duplication that would otherwise mean.
+//
+// A shallow copy is sufficient: Config has no field a role override should
+// touch beyond Role itself, and no pointer or slice field that copying by
+// value would alias.
+func (c *Config) WithRole(override string) *Config {
+	if override == "" {
+		return c
+	}
+	clone := *c
+	clone.Role = override
+	return &clone
+}
+
 // RequestTimeout bounds one call to Vault.
 func (c *Config) RequestTimeout() time.Duration {
 	if c.RequestTimeoutSeconds > 0 {
