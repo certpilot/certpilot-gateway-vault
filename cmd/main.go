@@ -20,7 +20,7 @@ import (
 
 	"github.com/certpilot/certpilot-gateway-sdk/grpckit"
 	providerv1 "github.com/certpilot/certpilot-gateway-sdk/pb/provider/v1"
-	"github.com/certpilot/certpilot/gateways/vault"
+	vault "github.com/certpilot/certpilot-gateway-vault"
 )
 
 func main() {
