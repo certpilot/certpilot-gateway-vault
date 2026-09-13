@@ -6,7 +6,7 @@ Vault's PKI secrets engine.
 Implements [`provider.v1`](https://github.com/certpilot/certpilot-gateway-sdk).
 
 ```
-docker run --rm -p 9093:9093 ghcr.io/certpilot/gateway-vault:latest
+docker run --rm -p 9093:9093 ghcr.io/certpilot/gateway-vault:0.2.0
 ```
 
 ## What it does
@@ -77,6 +77,16 @@ go run github.com/certpilot/certpilot-gateway-sdk/cmd/conformance@latest \
 
 Without `-config` the CA-dependent checks are skipped, because this gateway
 cannot reach a Vault without credentials and says so.
+
+## Releases
+
+`0.2.0`, on `linux/amd64` and `linux/arm64`. Images publish on a tag, never on a
+merge, so `latest` means the most recent release rather than the most recent
+commit — pin anyway for anything you depend on.
+
+The Go module is tagged in step with the image, so
+`go run github.com/certpilot/certpilot-gateway-vault/cmd@v0.2.0` runs the same code
+the image contains.
 
 ## Licence
 
