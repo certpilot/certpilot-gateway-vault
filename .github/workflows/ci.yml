@@ -79,6 +79,6 @@ jobs:
         with:
           context: .
           push: false
-          tags: gateway-/opt/homebrew/bin/vaulti
+          tags: gateway-vault:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
