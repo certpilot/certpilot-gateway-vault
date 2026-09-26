@@ -362,3 +362,38 @@ func splitPEM(bundle []byte) [][]byte {
 		rest = remainder
 	}
 }
+
+// TestLiveARenewalLastsWhatWasAskedFor is certpilot/certpilot#102 against a
+// running Vault: a renewal carried no lifetime, so Vault applied the role's
+// default TTL and a 90-day certificate came back lasting 32 days.
+func TestLiveARenewalLastsWhatWasAskedFor(t *testing.T) {
+	config := liveConfig(t, "pki-int", "web")
+	p := NewProvider(Options{})
+	ctx := context.Background()
+
+	issued, err := p.IssueCertificate(ctx, &providerv1.IssueCertificateRequest{
+		Domains:        []string{"renew-lifetime.example.com"},
+		ValidityDays:   90,
+		ProviderConfig: config,
+	})
+	if err != nil {
+		t.Fatalf("issuing from Vault: %v", err)
+	}
+	renewed, err := p.RenewCertificate(ctx, &providerv1.RenewCertificateRequest{
+		ProviderCertificateId: issued.ProviderCertificateId,
+		CurrentCertificatePem: issued.Certificate.CertificatePem,
+		ValidityDays:          90,
+		ProviderConfig:        config,
+	})
+	if err != nil {
+		t.Fatalf("renewing through Vault: %v", err)
+	}
+	for name, pemBytes := range map[string][]byte{
+		"issued": issued.Certificate.CertificatePem, "renewed": renewed.Certificate.CertificatePem,
+	} {
+		c := parsePEM(t, pemBytes)
+		if got := c.NotAfter.Sub(c.NotBefore); got < 89*24*time.Hour || got > 91*24*time.Hour {
+			t.Errorf("the %s certificate lasts %v from Vault; 90 days were asked for", name, got.Round(time.Hour))
+		}
+	}
+}

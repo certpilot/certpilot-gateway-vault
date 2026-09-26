@@ -3,7 +3,7 @@ module github.com/certpilot/certpilot-gateway-vault
 go 1.26.6
 
 require (
-	github.com/certpilot/certpilot-gateway-sdk v0.3.0
+	github.com/certpilot/certpilot-gateway-sdk v0.3.1-0.20260926115033-869819370566
 	google.golang.org/grpc v1.83.2
 	google.golang.org/protobuf v1.36.12
 )

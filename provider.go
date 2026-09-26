@@ -167,7 +167,12 @@ func (p *Provider) RenewCertificate(
 		}
 	}
 
-	result, generated, err := p.obtain(ctx, cfg, req.CsrPem, domains, 0)
+	// The lifetime the core asked for, sent as the ttl exactly as on issuance.
+	// This passed 0 before, because the contract could not carry one, so Vault
+	// applied the role's default TTL: a 90-day certificate renewed into 32 days
+	// against a real Vault (certpilot/certpilot#102). Zero still means the
+	// account's configured ttl, or the role's.
+	result, generated, err := p.obtain(ctx, cfg, req.CsrPem, domains, req.ValidityDays)
 	if err != nil {
 		return nil, err
 	}
