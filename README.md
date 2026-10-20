@@ -6,7 +6,7 @@ Vault's PKI secrets engine.
 Implements [`provider.v1`](https://github.com/certpilot/certpilot-gateway-sdk).
 
 ```
-docker run --rm -p 9093:9093 ghcr.io/certpilot/gateway-vault:0.4.1
+docker run --rm -p 9093:9093 ghcr.io/certpilot/gateway-vault:0.4.2
 ```
 
 ## What it does
@@ -80,12 +80,12 @@ cannot reach a Vault without credentials and says so.
 
 ## Releases
 
-`0.4.1`, on `linux/amd64` and `linux/arm64`. Images publish on a tag, never on a
+`0.4.2`, on `linux/amd64` and `linux/arm64`. Images publish on a tag, never on a
 merge, so `latest` means the most recent release rather than the most recent
 commit — pin anyway for anything you depend on.
 
 The Go module is tagged in step with the image, so
-`go run github.com/certpilot/certpilot-gateway-vault/cmd@v0.4.1` runs the same code
+`go run github.com/certpilot/certpilot-gateway-vault/cmd@v0.4.2` runs the same code
 the image contains.
 
 Every tag also gets its release page, created by the same workflow once the image
